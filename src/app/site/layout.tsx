@@ -1,13 +1,17 @@
-import Navigation from '@/components/site/navigation'
-import React from 'react'
+import Navigation from "@/components/site/navigation";
+import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
+import React from "react";
 
-const SiteLayout = ({ children } : { children: React.ReactNode }) => {
+const SiteLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className='h-screen'>
+    <ClerkProvider appearance={{ baseTheme: dark }}>
+      <main className="h-screen">
         <Navigation />
         {children}
-    </main>
-  )
-}
+      </main>
+    </ClerkProvider>
+  );
+};
 
-export default SiteLayout
+export default SiteLayout;
