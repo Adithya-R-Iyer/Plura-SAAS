@@ -3,7 +3,8 @@
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { db } from "./db";
 import { redirect } from "next/navigation";
-import { Agency, Plan, User } from "@prisma/client";
+import { Agency, Plan, SubAccount, User } from "@prisma/client";
+import { v4 } from "uuid";
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser();
@@ -186,31 +187,34 @@ export const verifyAndAcceptInvitation = async () => {
   }
 };
 
-export const updateAgencyDetails = async ( agencyId: string, agencyDetails: Partial<Agency> ) => {
+export const updateAgencyDetails = async (
+  agencyId: string,
+  agencyDetails: Partial<Agency>
+) => {
   const response = await db.agency.update({
-    where: { 
-      id: agencyId
+    where: {
+      id: agencyId,
     },
     data: {
-      ...agencyDetails
-    }
+      ...agencyDetails,
+    },
   });
 
   return response;
-}
+};
 
-export const deleteAgency = async(agencyId: string) => {
+export const deleteAgency = async (agencyId: string) => {
   const response = await db.agency.delete({
     where: {
-      id: agencyId
-    }
+      id: agencyId,
+    },
   });
   return response;
-}
+};
 
 export const initUser = async (newUser: Partial<User>) => {
   const user = await currentUser();
-  if(!user) {
+  if (!user) {
     return;
   }
 
@@ -224,8 +228,8 @@ export const initUser = async (newUser: Partial<User>) => {
       avatarUrl: user.imageUrl,
       email: user.emailAddresses[0].emailAddress,
       name: `${user.firstName} ${user.lastName}`,
-      Role: newUser.Role || "SUBACCOUNT_USER"
-    }
+      Role: newUser.Role || "SUBACCOUNT_USER",
+    },
   });
 
   await clerkClient.users.updateUserMetadata(user.id, {
@@ -235,10 +239,10 @@ export const initUser = async (newUser: Partial<User>) => {
   });
 
   return userData;
-}
+};
 
 export const upsertAgency = async (agency: Agency, price?: Plan) => {
-  if (!agency.companyEmail) return null
+  if (!agency.companyEmail) return null;
   try {
     const agencyDetails = await db.agency.upsert({
       where: {
@@ -253,41 +257,140 @@ export const upsertAgency = async (agency: Agency, price?: Plan) => {
         SidebarOption: {
           create: [
             {
-              name: 'Dashboard',
-              icon: 'category',
+              name: "Dashboard",
+              icon: "category",
               link: `/agency/${agency.id}`,
             },
             {
-              name: 'Launchpad',
-              icon: 'clipboardIcon',
+              name: "Launchpad",
+              icon: "clipboardIcon",
               link: `/agency/${agency.id}/launchpad`,
             },
             {
-              name: 'Billing',
-              icon: 'payment',
+              name: "Billing",
+              icon: "payment",
               link: `/agency/${agency.id}/billing`,
             },
             {
-              name: 'Settings',
-              icon: 'settings',
+              name: "Settings",
+              icon: "settings",
               link: `/agency/${agency.id}/settings`,
             },
             {
-              name: 'Sub Accounts',
-              icon: 'person',
+              name: "Sub Accounts",
+              icon: "person",
               link: `/agency/${agency.id}/all-subaccounts`,
             },
             {
-              name: 'Team',
-              icon: 'shield',
+              name: "Team",
+              icon: "shield",
               link: `/agency/${agency.id}/team`,
             },
           ],
         },
       },
-    })
-    return agencyDetails
+    });
+    return agencyDetails;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
+
+export const getNotificationAndUser = async (agencyId: string) => {
+  try {
+    const response = await db.notification.findMany({
+      where: { agencyId: agencyId },
+      include: { User: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const upsertSubAccount = async (subAccount: SubAccount) => {
+  if (!subAccount.companyEmail) return null;
+
+  const agencyOwner = await db.user.findFirst({
+    where: {
+      Agency: {
+        id: subAccount.agencyId,
+      },
+      Role: "AGENCY_OWNER",
+    },
+  });
+
+  if (!agencyOwner) {
+    return console.log("🔴Agency owner not found!");
+  }
+
+  const permissionId = v4();
+  const response = await db.subAccount.upsert({
+    where: { id: subAccount.id },
+    update: subAccount,
+    create: {
+      ...subAccount,
+      Permissions: {
+        create: {
+          id: permissionId,
+          access: true,
+          email: agencyOwner.email,
+        },
+        connect: {
+          subAccountId: subAccount.id,
+          id: permissionId,
+        },
+      },
+      Pipeline: {
+        create: { name: "Lead Cycle" },
+      },
+      SidebarOption: {
+        create: [
+          {
+            name: "Launchpad",
+            icon: "clipboardIcon",
+            link: `/subaccount/${subAccount.id}/launchpad`,
+          },
+          {
+            name: "Settings",
+            icon: "settings",
+            link: `/subaccount/${subAccount.id}/settings`,
+          },
+          {
+            name: "Funnels",
+            icon: "pipelines",
+            link: `/subaccount/${subAccount.id}/funnels`,
+          },
+          {
+            name: "Media",
+            icon: "database",
+            link: `/subaccount/${subAccount.id}/media`,
+          },
+          {
+            name: "Automations",
+            icon: "chip",
+            link: `/subaccount/${subAccount.id}/automations`,
+          },
+          {
+            name: "Pipelines",
+            icon: "flag",
+            link: `/subaccount/${subAccount.id}/pipelines`,
+          },
+          {
+            name: "Contacts",
+            icon: "person",
+            link: `/subaccount/${subAccount.id}/contacts`,
+          },
+          {
+            name: "Dashboard",
+            icon: "category",
+            link: `/subaccount/${subAccount.id}`,
+          },
+        ],
+      },
+    },
+  });
+
+  return response;
+};

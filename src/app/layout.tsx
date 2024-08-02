@@ -6,6 +6,8 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 import "./globals.css";
+import ModalProvider from "@/providers/model-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const font = DM_Sans({ subsets: ["latin"] });
 
@@ -20,11 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html 
-        lang="en"
-        suppressHydrationWarning  
-      >
-        <body className={font.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={font.className}>
         <NextSSRPlugin
           /**
            * The `extractRouterConfig` will extract **only** the route configs
@@ -34,15 +33,19 @@ export default function RootLayout({
            */
           routerConfig={extractRouterConfig(ourFileRouter)}
         />
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ModalProvider>
             <main>{children}</main>
-          </ThemeProvider>
-        </body>
-      </html>
+            <Toaster />
+            
+          </ModalProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

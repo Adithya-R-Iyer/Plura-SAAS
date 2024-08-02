@@ -125,7 +125,7 @@ model SubAccount {
   Funnels          Funnel[] // websites - each subaccounts will hv multiple websites
   Media            Media[]
   Contact          Contact[]
-  Trigger          Trigger[]  // additional unused field
+  Trigger          Trigger[] // additional unused field
   Automation       Automation[] //  additional unused field
   Pipeline         Pipeline[]
   Tags             Tag[]

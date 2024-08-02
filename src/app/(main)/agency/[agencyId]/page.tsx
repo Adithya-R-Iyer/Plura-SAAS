@@ -1,13 +1,13 @@
-import React from 'react'
+import React from "react";
 
 type Props = {
-    params: { agencyId: string }
-}
+  params: { agencyId: string };
+};
 
 const AgencyPage = ({ params }: Props) => {
-  return (
-    <div>{params.agencyId}</div>
-  )
-}
+  return <>
+    Page Contents
+  </>;
+};
 
-export default AgencyPage
+export default AgencyPage;
