@@ -17,6 +17,7 @@ import { Role } from "@prisma/client";
 import { Card } from "../ui/card";
 import { Switch } from "../ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { ModeToggle } from "./mode-toggle";
 
 type Props = {
   notifications: NotificationWithUser | [];
@@ -51,11 +52,11 @@ const InfoBar = ({ notifications, subAccountId, role, className }: Props) => {
           className
         )}
       >
-        <div className="flex items-center gap-2 ml-auto">
-          <UserButton afterSignOutUrl="/" />
+        <div className="flex items-center gap-4 ml-auto">
+          <UserButton afterSignOutUrl="/" showName />
           <Sheet>
             <SheetTrigger>
-              <div className="rounded-full w-8 h-8 bg-primary flex items-center justify-center text-white">
+              <div className="rounded-full w-7 h-7 bg-primary flex items-center justify-center text-white">
                 <Bell size={17} />
               </div>
             </SheetTrigger>
@@ -113,6 +114,7 @@ const InfoBar = ({ notifications, subAccountId, role, className }: Props) => {
               )}
             </SheetContent>
           </Sheet>
+          <ModeToggle />
         </div>
       </div>
     </>

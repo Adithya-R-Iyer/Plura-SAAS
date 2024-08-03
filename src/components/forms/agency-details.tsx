@@ -200,7 +200,7 @@ const AgencyDetails = ({ data }: Props) => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-4"
+              className="space-y-5"
             >
               <FormField
                 disabled={isLoading}
@@ -385,7 +385,7 @@ const AgencyDetails = ({ data }: Props) => {
                   />
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading}>
                 {isLoading && (
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                 )}
