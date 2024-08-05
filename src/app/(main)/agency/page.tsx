@@ -22,7 +22,7 @@ const Page = async ({ searchParams }: Props) => {
         if(searchParams.plan) {
           return redirect(`/agency/${agencyId}/billing?plan=${searchParams.plan}`);
         }
-        // stripe doesnt allow to return a dynamic url... so we cant possibly know the agencyId to redirect the user.. instead we can obtain it through 'state'... and then we can redirect the user with a searchParam called 'code' which contains info to confirm the process. (connecting multiple accounts)
+        // stripe doesn't allow to return a dynamic url... so we cant possibly know the agencyId to redirect the user.. instead we can obtain it through 'state'... and then we can redirect the user with a searchParam called 'code' which contains info to confirm the process. (connecting multiple accounts)
         if(searchParams.state) {
           const statePath = searchParams.state.split("___")[0];
           const stateAgencyId = searchParams.state.split("___")[1];

@@ -5,6 +5,7 @@ import { db } from "./db";
 import { redirect } from "next/navigation";
 import { Agency, Plan, Role, SubAccount, User } from "@prisma/client";
 import { v4 } from "uuid";
+import { CreateMediaType } from "./types";
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser();
@@ -358,9 +359,9 @@ export const upsertSubAccount = async (subAccount: SubAccount) => {
             link: `/subaccount/${subAccount.id}/settings`,
           },
           {
-            name: "Funnels",
-            icon: "pipelines",
-            link: `/subaccount/${subAccount.id}/funnels`,
+            name: "Websites",
+            icon: "flag",
+            link: `/subaccount/${subAccount.id}/websites`,
           },
           {
             name: "Media",
@@ -374,7 +375,7 @@ export const upsertSubAccount = async (subAccount: SubAccount) => {
           },
           {
             name: "Pipelines",
-            icon: "flag",
+            icon: "pipelines",
             link: `/subaccount/${subAccount.id}/pipelines`,
           },
           {
@@ -471,11 +472,11 @@ export const deleteUser = async (userId: string) => {
   const deletedUser = await db.user.delete({
     where: {
       id: userId,
-    }
+    },
   });
 
   return deletedUser;
-}
+};
 
 export const getUser = async (id: string) => {
   const user = await db.user.findUnique({
@@ -485,7 +486,7 @@ export const getUser = async (id: string) => {
   });
 
   return user;
-}
+};
 
 export const sendInvitation = async (
   role: Role,
@@ -494,7 +495,7 @@ export const sendInvitation = async (
 ) => {
   const response = await db.invitation.create({
     data: { email, agencyId, role },
-  })
+  });
 
   try {
     //TODO: add free email service here
@@ -505,13 +506,44 @@ export const sendInvitation = async (
         throughInvitation: true,
         role,
       },
-    })
+    });
   } catch (error) {
-    console.log(error)
-    throw error
+    console.log(error);
+    throw error;
   }
 
   return response;
+};
+
+export const getMedia = async (subAccountId: string) => {
+  const mediaFiles = await db.subAccount.findUnique({
+    where: {
+      id: subAccountId,
+    },
+    include: { Media: true },
+  });
+  return mediaFiles;
+};
+
+export const createMedia = async (
+  subAccountId: string,
+  mediaFile: CreateMediaType
+) => {
+  const response = await db.media.create({
+    data: {
+      link: mediaFile.link,
+      name: mediaFile.name,
+      subAccountId,
+    },
+  });
+  return response;
+};
+
+export const deleteMedia = async (mediaId: string) => {
+  const response = await db.media.delete({
+    where: {
+      id: mediaId,
+    },
+  })
+  return response
 }
-
-
